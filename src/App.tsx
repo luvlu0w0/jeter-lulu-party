@@ -4,6 +4,7 @@ import {createPortal} from 'react-dom';
 import {drinks,desserts,Guest} from './lib/menu';
 import {adjustSelection} from './lib/selection';
 import {saveInvitationImage} from './lib/save-image';
+import {submitRsvp} from './lib/submit-rsvp';
 const at=(x:number,y:number,w:number,h:number):CSSProperties=>({left:`${(x-80)/350*100}%`,top:`${(y-18)/480*100}%`,width:`${w/350*100}%`,height:`${h/480*100}%`});
 const invitationAssets={art:'./assets/invitation.svg',foreground:'./assets/invitation-foreground.svg',ultrasound:'./assets/ultrasound.gif',countdown:'./assets/countdown.webp'};
 const desktopBackgroundAssets={curtain:'./assets/desktop-bg-1.png',wood:'./assets/desktop-bg-2.png'};
@@ -95,7 +96,7 @@ export default function Home(){
  const quantity=(field:'drink'|'dessert',item:string)=>guests.filter(g=>g[field]===item).length;
  const selected=(field:'drink'|'dessert')=>guests.filter(g=>g[field]).length;
  function adjust(field:'drink'|'dessert',item:string,delta=1){setError('');setGuests(old=>adjustSelection(old,field,item,delta))}
- async function submit(){if(submitting.current||done)return;submitting.current=true;setBusy(true);setError('');try{const configResponse=await fetch('./config.json',{cache:'no-store'});if(!configResponse.ok)throw new Error('報名設定暫時無法載入，請稍後重試。');const config=await configResponse.json() as {apiUrl?:string};if(!config.apiUrl)throw new Error('報名功能正在準備中，請稍後再試。');const endpoint=new URL(config.apiUrl,location.href);if(endpoint.protocol!=='https:')throw new Error('報名設定有誤，請聯絡主辦人。');const r=await fetch(endpoint.toString(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id.current,name:name.trim(),attendance:attendance==='no'?'no':'yes',guests:attendance==='no'?[]:guests,note:''})});const b=await r.json() as {ok?:boolean,error?:string};if(!r.ok||b.ok!==true)throw new Error(b.error||'送出失敗，請稍後重試。');setDone(true);setPage(attendance==='no'?6:7);setOpen(true)}catch(e){setError(e instanceof Error?e.message:'連線失敗，請再試一次。');setOpen(true)}finally{setBusy(false);submitting.current=false}}
+ async function submit(){if(submitting.current||done)return;submitting.current=true;setBusy(true);setError('');try{await submitRsvp({id:id.current,name:name.trim(),attendance:attendance==='no'?'no':'yes',guests:attendance==='no'?[]:guests,note:''});setDone(true);setPage(attendance==='no'?6:7);setOpen(true)}catch(e){setError(e instanceof Error?e.message:'連線失敗，請再試一次。');setOpen(true)}finally{setBusy(false);submitting.current=false}}
  function begin(){setOpen(true);if(done){setPage(attendance==='no'?6:7);return}if(!name.trim()||!attendance||!Number.isInteger(companions)||companions<1||companions>19){setPage(0);setError('請填寫姓名、出席選項及正確的攜伴人數。');return}setError('');if(attendance==='no'){setPage(0);void submit();return}setGuests(prev=>Array.from({length:total},(_,i)=>({...prev[i],name:i===0?name.trim():`同行賓客 ${i}`,drink:prev[i]?.drink||'',dessert:prev[i]?.dessert||''})));setPage(1)}
  const validStart=!!name.trim()&&!!attendance&&(attendance!=='group'||Number.isInteger(companions)&&companions>=1&&companions<=19);
  function go(p:number){setError('');if(p===5&&selected('drink')!==guests.length){setError(`請在四頁飲品中選滿 ${guests.length} 杯，目前已選 ${selected('drink')} 杯。`);return}setPage(p)}
