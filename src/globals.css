@@ -74,3 +74,15 @@ html.survey-active,html.survey-active body{background:#51473d;overscroll-behavio
 
 /* Match the large-type SVG attendance text without changing the button geometry. */
 .mobile-p1-next.is-complete{font-size:3cqw}
+
+/* Compact, centered mobile closing message and equal-width countdown columns. */
+@media(max-width:767px){
+ .live-countdown{padding:4cqw 15cqw;justify-content:center;gap:3.8cqw;text-align:center}
+ .live-countdown h1{width:100%;font-size:4cqw;line-height:1.3;letter-spacing:.01em}
+ .live-countdown .countdown-values{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3cqw;width:100%;align-items:start}
+ .live-countdown .countdown-values>div{min-width:0}
+ .live-countdown .countdown-values b{display:block;font-size:7cqw;line-height:1;font-variant-numeric:tabular-nums}
+ .live-countdown .countdown-values span{font-size:2.1cqw;line-height:1.2;margin-top:1.2cqw;letter-spacing:0;white-space:nowrap}
+ .live-countdown .countdown-values>div:not(:last-child):after{right:-1.5cqw;top:0;transform:translateX(50%);font-size:7cqw;line-height:1}
+ .live-countdown p{width:100%;font-size:3.8cqw;line-height:1.4;white-space:nowrap}
+}
